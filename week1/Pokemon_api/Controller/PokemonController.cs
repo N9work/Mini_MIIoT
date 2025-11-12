@@ -29,6 +29,20 @@ namespace API_1.Controllers
             return Ok(result);
         }
 
+        [HttpGet("Pokemon")]
+       public async Task<IActionResult> Pokemon(
+           [FromQuery] string pokedex,
+           [FromQuery] string type)
+       {
+           var query = _context.Pokemon.AsQueryable();
+           if (!string.IsNullOrEmpty(pokedex))
+           {
+               query = query.Where(p => p.Pokedex.Contains(pokedex));
+           }
+           var result = await query.ToListAsync();
+           return Ok(result);
+       }
+
         [HttpPost("CreatePokemon")]
         public async Task<IActionResult> CreatePokemon([FromBody] Pokemon pokemon)
         {
