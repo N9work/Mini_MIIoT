@@ -15,14 +15,17 @@ namespace API_1.Controllers
             _context = context;
         }
 
-        [HttpGet("GetPokemon")] 
+        [HttpGet("GetPokemon")]
         public async Task<IActionResult> GetPokemon()
         {
-            var result = await _context.Pokemon.Select(x => new Pokemon
+            var result = await _context.Pokemon.Select(x => new
             {
                 id = x.id,
+                Pokedex = x.Pokedex,
                 Name = x.Name,
-                Type = x.Type
+                Type = x.Type,
+                Region = x.Region,
+                CreatedAt = x.CreatedAt,
             })
             .ToListAsync();
 
@@ -30,18 +33,22 @@ namespace API_1.Controllers
         }
 
         [HttpGet("Pokemon")]
-       public async Task<IActionResult> Pokemon(
+        public async Task<IActionResult> Pokemon(
            [FromQuery] string pokedex,
            [FromQuery] string type)
-       {
-           var query = _context.Pokemon.AsQueryable();
-           if (!string.IsNullOrEmpty(pokedex))
-           {
-               query = query.Where(p => p.Pokedex.Contains(pokedex));
-           }
-           var result = await query.ToListAsync();
-           return Ok(result);
-       }
+        {
+            var query = _context.Pokemon.AsQueryable();
+            if (!string.IsNullOrEmpty(pokedex))
+            {
+                query = query.Where(p => p.Pokedex.Contains(pokedex));
+            }
+            if (!string.IsNullOrEmpty(type))
+            {
+                query = query.Where(p => p.Type.Contains(type));
+            }
+            var result = await query.ToListAsync();
+            return Ok(result);
+        }
 
         [HttpPost("CreatePokemon")]
         public async Task<IActionResult> CreatePokemon([FromBody] Pokemon pokemon)
@@ -55,10 +62,17 @@ namespace API_1.Controllers
         [HttpPut("EditPokemon")]
         public async Task<IActionResult> EditPokemon([FromBody] Pokemon pokemon)
         {
-            var rows = await _context.Pokemon.Where(x => x.id == pokemon.id)
-                .ExecuteUpdateAsync(x => x.SetProperty(x => x.Name, pokemon.Name));
+            var exist = await _context.Pokemon.Where(x => x.id==pokemon.id)
+                .ExecuteUpdateAsync(x => x
+                .SetProperty(x => x.Name, pokemon.Name)
+                .SetProperty(x => x.Type, pokemon.Type)
+                .SetProperty(x => x.Pokedex, pokemon.Pokedex)
+                .SetProperty(x => x.Region, pokemon.Region)
+                .SetProperty(x => x.UpdatedAt, DateTime.UtcNow)
 
-            return Ok(pokemon);
+                );
+
+            return Ok(exist);
         }
 
         [HttpDelete("DeletePokemon")]
