@@ -10,9 +10,7 @@ class TokyoController {
     try {
       // ดึงทุกฟิลด์ที่ is_active = TRUE สำหรับ location Tokyo
       const configRows = await pgService.query(
-        `SELECT influx_field
-         FROM influx_topic_sensor
-         WHERE location = $1 AND is_active = TRUE`,
+        `SELECT * FROM fn_get_influx_fields_all($1)`,
         ['Tokyo']
       );
 

@@ -9,9 +9,7 @@ async getWeatherData(req, res) {
     try {
   
       const configRows = await pgService.query(
-        `SELECT influx_field
-         FROM influx_topic_sensor
-         WHERE location = $1 AND is_active = TRUE`,
+        `SELECT * FROM fn_get_influx_fields_all($1)`,
         ['Bangkok']
       );
 
@@ -48,7 +46,7 @@ async getWeatherData(req, res) {
     try {
 
         await pgService.query(
-            `CALL proc_influx_fields_set_false`,
+            `CALL proc_influx_fields_set_false($1)`,
             ['Bangkok']
         );
 
