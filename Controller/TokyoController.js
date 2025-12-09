@@ -50,24 +50,17 @@ class TokyoController {
     try {
 
         await pgService.query(
-            `UPDATE influx_topic_sensor
-             SET is_select = FALSE
-             WHERE location = $1`,
+            `CALL proc_influx_fields_set_false($1)`,
             ['Tokyo']
         );
 
 
         await pgService.query(
-            `UPDATE influx_topic_sensor
-             SET is_select = TRUE
-             WHERE location = $1 
-             AND influx_field = ANY($2::text[])`,
+            `CALL proc_influx_fields_selected($1, $2)`,
             ['Tokyo',influx_field]
         );
         const selectRows = await pgService.query(
-        `SELECT influx_field
-         FROM influx_topic_sensor
-         WHERE location = $1 AND is_select = TRUE`,
+        'SELECT * FROM fn_get_influx_field($1)',
         ['Tokyo']
       );
 

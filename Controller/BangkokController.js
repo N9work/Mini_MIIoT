@@ -48,25 +48,18 @@ async getWeatherData(req, res) {
     try {
 
         await pgService.query(
-            `UPDATE influx_topic_sensor
-             SET is_select = FALSE
-             WHERE location = $1`,
+            `CALL proc_influx_fields_set_false`,
             ['Bangkok']
         );
 
         await pgService.query(
-            `UPDATE influx_topic_sensor
-             SET is_select = TRUE
-             WHERE location = $1 
-             AND influx_field = ANY($2::text[])`,
+            `CALL proc_influx_fields_selected($1, $2)`,
             ['Bangkok',influx_field]
         );
 
 
       const selectRows = await pgService.query(
-        `SELECT influx_field
-         FROM influx_topic_sensor
-         WHERE location = $1 AND is_select = TRUE`,
+        `SELECT * FROM fn_get_influx_field($1)`,
         ['Bangkok']
       );
 
